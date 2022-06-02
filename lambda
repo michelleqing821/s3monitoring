@@ -1,0 +1,47 @@
+import boto3
+import datetime as dt
+
+time_want_to_check = dt.timedelta(hours=1)
+
+
+def count_files(pick_time, from_time):
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket('nbcuas-audience-graph')
+    year = 'year=' + str("{:04d}".format(pick_time.year))
+    month = 'month=' + str("{:02d}".format(pick_time.month))
+    day = 'day=' + str("{:02d}".format(pick_time.day))
+    hour = 'hour=' + str("{:02d}".format(pick_time.hour))
+
+    time_path = f"device_data_generic/src=fw/{year}/{month}/{day}/{hour}/"
+
+    objs = bucket.objects.filter(Prefix=time_path)
+    recent_objects = [key.last_modified for key in objs if from_time - key.last_modified < time_want_to_check]
+    return len(recent_objects)
+    if not objs:
+        return 0
+
+
+def total_file_count():
+    now = dt.datetime.now(dt.timezone.utc)
+    last_hour = now - time_want_to_check
+    return int(count_files(now, now) + count_files(last_hour, now))
+
+
+def push_to_cloudwatch(results):
+    cloudwatch = boto3.client('cloudwatch')
+    cloudwatch.put_metric_data(
+        MetricData=[
+            {
+                'MetricName': 'NbcuTrackerFreewheelPartitions',
+                'Unit': 'None',
+                'Value': results
+            }
+        ],
+        Namespace='MonitoringS3'
+    )
+
+
+def lambda_handler(event, context):
+    results = total_file_count()
+    push_to_cloudwatch(results)
+
