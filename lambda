@@ -32,7 +32,7 @@ def push_to_cloudwatch(results):
     cloudwatch.put_metric_data(
         MetricData=[
             {
-                'MetricName': 'NbcuTrackerFreewheelPartitions',
+                'MetricName': 'MetricName',
                 'Unit': 'None',
                 'Value': results
             }
