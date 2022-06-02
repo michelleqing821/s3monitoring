@@ -1,14 +1,13 @@
 This is describing the steps taken to create and use a lambda function for monitoring s3 files.
 
-s3 location: `s3://nbcuas-audience-graph/device_data_generic/src=fw/year=YYYY/month=MM/day=DD/hour=hh/`
 # Description of Lambda Function
 This lambda function checks the number of files in the given s3 location and ensures that in the past 60 minutes, 
-720 files were created (12 files are created per minute). The purpose of this is to make sure that if files aren't being
+x files were created. The purpose of this is to make sure that if files aren't being
 uploaded into the s3 location properly, we can be sent an alert right away so that we can identify the problem quickly. 
 
 The lambda function does this by checking the modification dates (UTC) of the files in the last hour and current time. If 
-the modification dates are within the past hour, it adds 1 to a count. This way, the number 720 should be produced if 
-720 files are being correctly uploaded. 
+the modification dates are within the past hour, it adds 1 to a count. This way, the total expected should be produced if 
+the files are being correctly uploaded. 
 
 If the files were to stop uploading, meaning the paths stop being created at certain times, the number 0 is pushed instead. 
 
